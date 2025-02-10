@@ -201,9 +201,9 @@ def gen_sh(
     if len(sample_prompts) > 0 and sample_every_n_steps > 0:
         sample = f"""--sample_prompts={resolve_path('sample_prompts.txt')} --sample_every_n_steps="{sample_every_n_steps}" {line_break}"""
 
-    pretrained_model_path = resolve_path("models/unet/flux1-dev-fp8.safetensors")
+    pretrained_model_path = resolve_path("models/unet/flux1-dev.safetensors")
     clip_path = resolve_path("models/clip/clip_l.safetensors")
-    t5_path = resolve_path("models/clip/t5xxl_fp8.safetensors")
+    t5_path = resolve_path("models/clip/t5xxl_fp16.safetensors")
     ae_path = resolve_path("models/vae/ae.sft")
     output_dir = resolve_path("outputs")
 
@@ -227,7 +227,7 @@ def gen_sh(
         optimizer = f"--optimizer_type adamw8bit {line_break}"
 
     sh = f"""accelerate launch {line_break}
-  --mixed_precision bf16 {line_break}
+  --mixed_precision fp16 {line_break}
   --num_cpu_threads_per_process 1 {line_break}
   sd-scripts/flux_train_network.py {line_break}
   --pretrained_model_name_or_path {pretrained_model_path} {line_break}
@@ -240,15 +240,14 @@ def gen_sh(
   --max_data_loader_n_workers {workers} {line_break}
   --seed {seed} {line_break}
   --gradient_checkpointing {line_break}
-  --mixed_precision bf16 {line_break}
-  --save_precision bf16 {line_break}
+  --mixed_precision fp16 {line_break}
+  --save_precision fp16 {line_break}
   --network_module networks.lora_flux {line_break}
   --network_dim {network_dim} {line_break}
   {optimizer}{sample}
   --learning_rate {learning_rate} {line_break}
   --cache_text_encoder_outputs {line_break}
   --cache_text_encoder_outputs_to_disk {line_break}
-  --fp8_base {line_break}
   --highvram {line_break}
   --max_train_epochs {max_train_epochs} {line_break}
   --save_every_n_epochs {save_every_n_epochs} {line_break}
